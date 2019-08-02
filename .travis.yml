@@ -4,11 +4,6 @@ compiler:
   - clang
   - gcc
 
-sudo: required
-
-services:
-  - docker
-
 env:
   global:
     # DEPLOY_USER
@@ -20,23 +15,38 @@ branches:
   except:
     - /^(?i:continuous)$/
 
-script:
-  - wget -c https://raw.githubusercontent.com/lirios/infra-travis/master/run
-  - bash run ./.travis/build.sh
-
-deploy:
-  - provider: script
-    script: .travis/deploy.sh build/artifacts/fluid-artifacts.tar.gz
-    skip_cleanup: true
-    on:
-      branch: master
-      condition: "$CC = gcc) && ($TRAVIS_PULL_REQUEST = false"
-  - provider: script
-    script: .travis/deploy.sh build/artifacts/fluid-artifacts.tar.gz
-    skip_cleanup: true
-    on:
-      branch: develop
-      condition: "$CC = gcc) && ($TRAVIS_PULL_REQUEST = false"
+matrix:
+  include:
+    - os: linux
+      sudo: required
+      services:
+        - docker
+      script:
+        - wget -c https://raw.githubusercontent.com/lirios/infra-travis/master/run
+        - bash run ./.travis/build.sh
+      deploy:
+        - provider: script
+          script: .travis/deploy.sh build/artifacts/fluid-artifacts.tar.gz
+          skip_cleanup: true
+          on:
+            branch: master
+            condition: "$CC = gcc) && ($TRAVIS_PULL_REQUEST = false"
+        - provider: script
+          script: .travis/deploy.sh build/artifacts/fluid-artifacts.tar.gz
+          skip_cleanup: true
+          on:
+            branch: develop
+            condition: "$CC = gcc) && ($TRAVIS_PULL_REQUEST = false"
+    - os: windows
+      before_install:
+        - dir "C:/Program Files (x86)/Windows Kits/10/bin/10.0.17134.0/x64"
+        - cmd.exe /C 'cd && "C:\Program Files (x86)\Microsoft Visual Studio\2017\BuildTools\VC\Auxiliary\Build\vcvarsall.bat"'
+        - curl -vLO http://download.qt.io/official_releases/online_installers/qt-unified-windows-x86-online.exe
+        - curl -vLO https://marclandolt.ch/ml_buzzernet/wp-content/uploads/2019/06/qt-installer-windows.qs_.txt > qt-installer-windows.qs
+        - "./qt-unified-windows-x86-online.exe --verbose --script qt-installer-windows.qs"
+        - ls -la C:/Qt/5.12.3/msvc2017/bin/qtenv2.bat
+      script:
+        - cmd.exe /C 'cd && "C:\Qt\5.12.3\msvc2017\bin\qtenv2.bat" && cd && "C:\Program Files (x86)\Microsoft Visual Studio\2017\BuildTools\VC\Auxiliary\Build\vcvarsall.bat" x86 && cmake . && make'
 
 notifications:
   email: false
