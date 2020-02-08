@@ -29,7 +29,7 @@ LiriQmlPlugin {
         files: {
             var sources = ["*.cpp", "*.h"];
             if (!project.installIcons)
-                sources.concat(["*.qrc"]);
+                sources = sources.concat(["*.qrc"]);
             return sources;
         }
     }
