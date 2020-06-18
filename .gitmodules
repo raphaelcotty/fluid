@@ -1,6 +1,6 @@
 [submodule "qbs-shared"]
 	path = qbs/shared
-	url = git://github.com/lirios/qbs-shared
+	url = git://github.com/raphaelcotty/qbs-shared
 	branch = master
 [submodule "cmake-shared"]
 	path = cmake/shared
